@@ -7,6 +7,7 @@ import { checklistRouter } from './routes/checklist'
 import { listsRouter } from './routes/lists'
 import { nutritionRouter } from './routes/nutrition'
 import { workoutRouter } from './routes/workout'
+import { uiRouter } from './routes/ui'
 
 export function createApp() {
   const app = new Hono()
@@ -20,6 +21,9 @@ export function createApp() {
   app.get('/health', (c) =>
     c.json({ status: 'ok', timestamp: new Date().toISOString() }),
   )
+
+  // Checklist UI — morning/evening routine page
+  app.route('/checklist', uiRouter)
 
   // Domain routers
   app.route('/api/v1/checklist', checklistRouter)
