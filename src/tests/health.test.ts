@@ -19,7 +19,8 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  const domains = ['checklist', 'lists', 'workout', 'nutrition', 'bootcamp']
+  // Checklist is implemented in Phase 2 — excluded from stub checks
+  const domains = ['lists', 'workout', 'nutrition', 'bootcamp']
 
   for (const domain of domains) {
     it(`GET /api/v1/${domain} returns 200`, async () => {
@@ -32,4 +33,19 @@ describe('Domain stub routes', () => {
       expect(body.message).toContain('coming soon')
     })
   }
+})
+
+describe('GET /api/v1/checklist', () => {
+  const app = createApp()
+
+  it('returns 200 with morning and evening keys', async () => {
+    const req = new Request('http://localhost/api/v1/checklist')
+    const res = await app.fetch(req)
+
+    expect(res.status).toBe(200)
+
+    const body = (await res.json()) as { data: { morning: unknown[]; evening: unknown[] } }
+    expect(body.data).toHaveProperty('morning')
+    expect(body.data).toHaveProperty('evening')
+  })
 })
