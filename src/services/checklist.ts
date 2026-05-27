@@ -1,16 +1,56 @@
-// Phase 1 stub — no DB calls yet.
-// Phase 2: inject Supabase/Drizzle client here.
+import { supabase } from '../lib/supabase.js'
+import type { Task, CreateTaskInput, UpdateTaskInput } from '../schemas/checklist.js'
 
 export const checklistService = {
-  getTasks: async () => {
-    return []
+  async getTasks(): Promise<{ morning: Task[]; evening: Task[] }> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('sort_order', { ascending: true })
+
+    if (error) throw new Error(error.message)
+
+    const morning = (data ?? []).filter((t) => t.period === 'AM') as Task[]
+    const evening = (data ?? []).filter((t) => t.period === 'PM') as Task[]
+    return { morning, evening }
   },
 
-  getCompletionsForDate: async (_date: string) => {
-    return []
+  async createTask(data: CreateTaskInput): Promise<Task> {
+    const { data: created, error } = await supabase
+      .from('tasks')
+      .insert(data)
+      .select()
+      .single()
+
+    if (error) throw new Error(error.message)
+    if (!created) throw new Error('Insert returned no data')
+    return created as Task
   },
 
-  toggleCompletion: async (_taskId: string, _date: string, _complete: boolean) => {
-    return null
+  async updateTask(id: string, data: UpdateTaskInput): Promise<Task | null> {
+    const { data: updated, error } = await supabase
+      .from('tasks')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      // PostgREST returns PGRST116 when no rows matched
+      if (error.code === 'PGRST116') return null
+      throw new Error(error.message)
+    }
+    return updated as Task
+  },
+
+  async deleteTask(id: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id)
+      .select('id')
+
+    if (error) throw new Error(error.message)
+    return (data ?? []).length > 0
   },
 }
