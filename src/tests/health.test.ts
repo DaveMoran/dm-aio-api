@@ -19,8 +19,8 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  // Checklist is implemented in Phase 2 — excluded from stub checks
-  const domains = ['lists', 'workout', 'nutrition', 'bootcamp']
+  // Checklist and nutrition are fully implemented — excluded from stub checks
+  const domains = ['lists', 'workout', 'bootcamp']
 
   for (const domain of domains) {
     it(`GET /api/v1/${domain} returns 200`, async () => {
