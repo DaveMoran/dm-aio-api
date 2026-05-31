@@ -1,6 +1,11 @@
 import { describe, expect, it, mock, beforeEach } from 'bun:test'
 import type { Task } from '../schemas/checklist.js'
 
+const TODAY = new Date().toISOString().split('T')[0] as string
+const YESTERDAY = (() => {
+  const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]
+})() as string
+
 // Fixtures
 const amTask: Task = {
   id: '3ea5ec8a-84db-406f-a39d-394b75ca7574',
@@ -9,6 +14,7 @@ const amTask: Task = {
   sort_order: 1,
   completed: false,
   created_at: '2026-05-25T12:19:57.890539+00:00',
+  deleted_at: null,
 }
 
 const pmTask: Task = {
@@ -18,6 +24,7 @@ const pmTask: Task = {
   sort_order: 1,
   completed: false,
   created_at: '2026-05-25T12:19:57.890539+00:00',
+  deleted_at: null,
 }
 
 // Mock must be called before importing the app
@@ -27,7 +34,7 @@ const mockGetTasks = mock(() =>
 
 const mockCreateTask = mock(() => Promise.resolve(null as Task | null))
 
-const mockUpdateTask = mock(() => Promise.resolve(null as Task | null))
+const mockToggleTask = mock(() => Promise.resolve(null as Task | null))
 
 const mockDeleteTask = mock(() => Promise.resolve(false))
 
@@ -35,8 +42,9 @@ mock.module('../services/checklist.js', () => ({
   checklistService: {
     getTasks: mockGetTasks,
     createTask: mockCreateTask,
-    updateTask: mockUpdateTask,
+    toggleTask: mockToggleTask,
     deleteTask: mockDeleteTask,
+    todayUTC: () => TODAY,
   },
 }))
 
@@ -112,6 +120,7 @@ describe('POST /api/v1/checklist', () => {
       sort_order: 7,
       completed: false,
       created_at: '2026-05-26T10:00:00.000000+00:00',
+      deleted_at: null,
     }
     mockCreateTask.mockResolvedValueOnce(createdTask)
 
@@ -170,7 +179,7 @@ describe('PATCH /api/v1/checklist/:id', () => {
   const VALID_ID = '3ea5ec8a-84db-406f-a39d-394b75ca7574'
 
   beforeEach(() => {
-    mockUpdateTask.mockReset()
+    mockToggleTask.mockReset()
   })
 
   it('returns 200 with updated task', async () => {
@@ -181,14 +190,15 @@ describe('PATCH /api/v1/checklist/:id', () => {
       sort_order: 1,
       completed: true,
       created_at: '2026-05-25T12:19:57.890539+00:00',
+      deleted_at: null,
     }
-    mockUpdateTask.mockResolvedValueOnce(updatedTask)
+    mockToggleTask.mockResolvedValueOnce(updatedTask)
 
     const res = await app.fetch(
       new Request(`http://localhost/api/v1/checklist/${VALID_ID}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: true }),
+        body: JSON.stringify({ completed: true, date: TODAY }),
       }),
     )
 
@@ -199,13 +209,13 @@ describe('PATCH /api/v1/checklist/:id', () => {
   })
 
   it('returns 404 when task not found', async () => {
-    mockUpdateTask.mockResolvedValueOnce(null)
+    mockToggleTask.mockResolvedValueOnce(null)
 
     const res = await app.fetch(
       new Request(`http://localhost/api/v1/checklist/${VALID_ID}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: true }),
+        body: JSON.stringify({ completed: true, date: TODAY }),
       }),
     )
 
@@ -227,16 +237,19 @@ describe('PATCH /api/v1/checklist/:id', () => {
     expect(res.status).toBe(400)
   })
 
-  it('returns 400 for invalid period value', async () => {
+  it('returns 400 when date is in the past', async () => {
     const res = await app.fetch(
       new Request(`http://localhost/api/v1/checklist/${VALID_ID}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period: 'NOON' }),
+        body: JSON.stringify({ completed: true, date: YESTERDAY }),
       }),
     )
 
     expect(res.status).toBe(400)
+
+    const body = (await res.json()) as { error: string }
+    expect(body).toEqual({ error: 'Cannot modify historical data' })
   })
 })
 
