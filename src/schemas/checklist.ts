@@ -7,6 +7,7 @@ export const TaskSchema = z.object({
   sort_order: z.number().int(),
   completed: z.boolean(),
   created_at: z.string().datetime(),
+  deleted_at: z.string().datetime().nullable(),
 })
 
 export const CreateTaskSchema = z.object({
@@ -16,12 +17,10 @@ export const CreateTaskSchema = z.object({
 })
 
 // At least one field required
-export const UpdateTaskSchema = TaskSchema
-  .pick({ name: true, period: true, sort_order: true, completed: true })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'At least one field must be provided',
-  })
+export const UpdateTaskSchema = z.object({
+  completed: z.boolean(),
+  date: z.string().date(),
+})
 
 export const TaskCompletionSchema = z.object({
   id: z.string().uuid(),
