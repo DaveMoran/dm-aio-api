@@ -1,0 +1,327 @@
+openapi: 3.1.0
+info:
+  title: dm-aio-api
+  version: 0.1.0
+  description: Personal all-in-one API for morning/evening routines, workouts, nutrition, and bootcamp tracking. Built with Bun + Hono, backed by Supabase.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Checklist
+    description: Morning and evening routine tasks
+  - name: Lists
+    description: Shopping and todo lists (coming soon)
+  - name: Workout
+    description: Workout plans and tracking (coming soon)
+  - name: Nutrition
+    description: Macro targets and logging (coming soon)
+  - name: Bootcamp
+    description: Bootcamp progress tracking (coming soon)
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, timestamp]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-05-31T12:00:00.000Z"
+
+  /api/v1/checklist:
+    get:
+      tags: [Checklist]
+      summary: Get tasks grouped by period
+      operationId: getChecklist
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: Date to fetch tasks for (defaults to today UTC)
+          schema:
+            type: string
+            format: date
+            example: "2026-05-31"
+      responses:
+        "200":
+          description: Tasks grouped into morning and evening lists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistResponse"
+
+    post:
+      tags: [Checklist]
+      summary: Create a routine task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+            example:
+              name: Meditate
+              period: AM
+              sort_order: 3
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/checklist/{id}:
+    patch:
+      tags: [Checklist]
+      summary: Update task completion for a date
+      operationId: updateTask
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+            example:
+              completed: true
+              date: "2026-05-31"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          description: Cannot modify historical data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Cannot modify historical data
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Task not found
+
+    delete:
+      tags: [Checklist]
+      summary: Soft-delete a task
+      operationId: deleteTask
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "204":
+          description: Task deleted
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Task not found
+
+  /api/v1/lists:
+    get:
+      tags: [Lists]
+      summary: Lists routes (coming soon)
+      operationId: getLists
+      responses:
+        "200":
+          description: Placeholder response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: lists routes coming soon
+
+  /api/v1/workout:
+    get:
+      tags: [Workout]
+      summary: Workout routes (coming soon)
+      operationId: getWorkout
+      responses:
+        "200":
+          description: Placeholder response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: workout routes coming soon
+
+  /api/v1/nutrition:
+    get:
+      tags: [Nutrition]
+      summary: Nutrition routes (coming soon)
+      operationId: getNutrition
+      responses:
+        "200":
+          description: Placeholder response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: nutrition routes coming soon
+
+  /api/v1/bootcamp:
+    get:
+      tags: [Bootcamp]
+      summary: Bootcamp routes (coming soon)
+      operationId: getBootcamp
+      responses:
+        "200":
+          description: Placeholder response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: bootcamp routes coming soon
+
+components:
+  parameters:
+    TaskId:
+      name: id
+      in: path
+      required: true
+      description: UUID of the task
+      schema:
+        type: string
+        format: uuid
+        example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+  schemas:
+    Task:
+      type: object
+      required: [id, name, period, sort_order, completed, created_at, deleted_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        name:
+          type: string
+          minLength: 1
+          example: Meditate
+        period:
+          type: string
+          enum: [AM, PM]
+          example: AM
+        sort_order:
+          type: integer
+          example: 3
+        completed:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-31T07:00:00.000Z"
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    CreateTaskRequest:
+      type: object
+      required: [name, period, sort_order]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Meditate
+        period:
+          type: string
+          enum: [AM, PM]
+          example: AM
+        sort_order:
+          type: integer
+          minimum: 1
+          example: 3
+
+    UpdateTaskRequest:
+      type: object
+      required: [completed, date]
+      properties:
+        completed:
+          type: boolean
+          example: true
+        date:
+          type: string
+          format: date
+          example: "2026-05-31"
+
+    ChecklistResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [morning, evening]
+          properties:
+            morning:
+              type: array
+              items:
+                $ref: "#/components/schemas/Task"
+            evening:
+              type: array
+              items:
+                $ref: "#/components/schemas/Task"
+
+    TaskResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Task"
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: Task not found
