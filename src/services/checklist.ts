@@ -6,18 +6,17 @@ function todayUTC(): string {
 }
 
 export const checklistService = {
-  async getTasks(date: string): Promise<{ morning: Task[]; evening: Task[] }> {
-    // Fetch tasks that existed on this date (lifecycle filter)
+  async getTasks(date: string, userId: string): Promise<{ morning: Task[]; evening: Task[] }> {
     const { data: taskRows, error: taskError } = await supabase
       .from('tasks')
       .select('*')
+      .eq('user_id', userId)
       .lte('created_at', `${date}T23:59:59.999Z`)
       .or(`deleted_at.is.null,deleted_at.gt.${date}T23:59:59.999Z`)
       .order('sort_order', { ascending: true })
 
     if (taskError) throw new Error(taskError.message)
 
-    // Fetch completion records for this date
     const taskIds = (taskRows ?? []).map((t) => t.id)
     let completedIds = new Set<string>()
 
@@ -42,10 +41,10 @@ export const checklistService = {
     return { morning, evening }
   },
 
-  async createTask(data: CreateTaskInput): Promise<Task> {
+  async createTask(data: CreateTaskInput, userId: string): Promise<Task> {
     const { data: created, error } = await supabase
       .from('tasks')
-      .insert(data)
+      .insert({ ...data, user_id: userId })
       .select()
       .single()
 
@@ -54,12 +53,12 @@ export const checklistService = {
     return { ...created, completed: false } as Task
   },
 
-  async toggleTask(id: string, completed: boolean, date: string): Promise<Task | null> {
-    // Verify the task exists and was alive on this date
+  async toggleTask(id: string, completed: boolean, date: string, userId: string): Promise<Task | null> {
     const { data: task, error: fetchError } = await supabase
       .from('tasks')
       .select('*')
       .eq('id', id)
+      .eq('user_id', userId)
       .lte('created_at', `${date}T23:59:59.999Z`)
       .or(`deleted_at.is.null,deleted_at.gt.${date}T23:59:59.999Z`)
       .single()
@@ -86,11 +85,12 @@ export const checklistService = {
     return { ...task, completed, deleted_at: task.deleted_at ?? null } as Task
   },
 
-  async deleteTask(id: string): Promise<boolean> {
+  async deleteTask(id: string, userId: string): Promise<boolean> {
     const { data, error } = await supabase
       .from('tasks')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('user_id', userId)
       .is('deleted_at', null)
       .select('id')
 
