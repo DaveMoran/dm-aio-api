@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase.js'
 import type { Task, CreateTaskInput } from '../schemas/checklist.js'
 
 function todayUTC(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 }
 
 export const checklistService = {
