@@ -1,0 +1,189 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-31T00:00:00.000Z",
+  "__export_source": "dm-aio-api",
+  "resources": [
+    {
+      "_id": "wrk_dm_aio_api",
+      "_type": "workspace",
+      "name": "dm-aio-api",
+      "description": "Personal all-in-one API for morning/evening routines, workouts, nutrition, and bootcamp tracking.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_dm_aio_api_base",
+      "_type": "environment",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000"
+      },
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_health",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Health",
+      "description": ""
+    },
+    {
+      "_id": "req_health_check",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "Health Check",
+      "method": "GET",
+      "url": "{{ base_url }}/health",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Returns service health status and current timestamp."
+    },
+    {
+      "_id": "fld_checklist",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Checklist",
+      "description": "Morning and evening routine tasks"
+    },
+    {
+      "_id": "req_checklist_get",
+      "_type": "request",
+      "parentId": "fld_checklist",
+      "name": "Get Checklist",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/checklist",
+      "body": {},
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "parameters": [
+        { "name": "date", "value": "2026-05-31", "disabled": true }
+      ],
+      "description": "Returns tasks grouped by period (morning/evening) for a given date. Omit the date param to default to today."
+    },
+    {
+      "_id": "req_checklist_post",
+      "_type": "request",
+      "parentId": "fld_checklist",
+      "name": "Create Task",
+      "method": "POST",
+      "url": "{{ base_url }}/api/v1/checklist",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Meditate\",\n  \"period\": \"AM\",\n  \"sort_order\": 3\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "parameters": [],
+      "description": "Creates a new routine task. period must be AM or PM. sort_order must be >= 1."
+    },
+    {
+      "_id": "req_checklist_patch",
+      "_type": "request",
+      "parentId": "fld_checklist",
+      "name": "Update Task Completion",
+      "method": "PATCH",
+      "url": "{{ base_url }}/api/v1/checklist/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"completed\": true,\n  \"date\": \"2026-05-31\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "parameters": [],
+      "description": "Updates a task's completion status for a specific date. Replace the UUID in the path with a real task ID. Server rejects updates to dates other than today."
+    },
+    {
+      "_id": "req_checklist_delete",
+      "_type": "request",
+      "parentId": "fld_checklist",
+      "name": "Delete Task",
+      "method": "DELETE",
+      "url": "{{ base_url }}/api/v1/checklist/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Soft-deletes a task (sets deleted_at). Replace the UUID in the path with a real task ID."
+    },
+    {
+      "_id": "fld_lists",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Lists",
+      "description": "Shopping and todo lists (coming soon)"
+    },
+    {
+      "_id": "req_lists_get",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "Get Lists (stub)",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/lists",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Placeholder — returns coming soon message."
+    },
+    {
+      "_id": "fld_workout",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Workout",
+      "description": "Workout plans and tracking (coming soon)"
+    },
+    {
+      "_id": "req_workout_get",
+      "_type": "request",
+      "parentId": "fld_workout",
+      "name": "Get Workout (stub)",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/workout",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Placeholder — returns coming soon message."
+    },
+    {
+      "_id": "fld_nutrition",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Nutrition",
+      "description": "Macro targets and logging (coming soon)"
+    },
+    {
+      "_id": "req_nutrition_get",
+      "_type": "request",
+      "parentId": "fld_nutrition",
+      "name": "Get Nutrition (stub)",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/nutrition",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Placeholder — returns coming soon message."
+    },
+    {
+      "_id": "fld_bootcamp",
+      "_type": "request_group",
+      "parentId": "wrk_dm_aio_api",
+      "name": "Bootcamp",
+      "description": "Bootcamp progress tracking (coming soon)"
+    },
+    {
+      "_id": "req_bootcamp_get",
+      "_type": "request",
+      "parentId": "fld_bootcamp",
+      "name": "Get Bootcamp (stub)",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/bootcamp",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "description": "Placeholder — returns coming soon message."
+    }
+  ]
+}
