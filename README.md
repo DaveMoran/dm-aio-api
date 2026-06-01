@@ -66,10 +66,10 @@ curl http://localhost:3000/api/v1/checklist
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/v1/checklist` | Returns all tasks grouped into `morning` (AM) and `evening` (PM) lists, ordered by `sort_order` |
+| `GET` | `/api/v1/checklist` | Returns all tasks grouped into `morning` (AM) and `evening` (PM) lists, ordered by `sort_order`. Accepts optional `?date=YYYY-MM-DD` (defaults to today UTC) |
 | `POST` | `/api/v1/checklist` | Create a new routine task |
-| `PATCH` | `/api/v1/checklist/:id` | Update a task — use `{ "completed": true }` to tick it off |
-| `DELETE` | `/api/v1/checklist/:id` | Delete a routine task |
+| `PATCH` | `/api/v1/checklist/:id` | Update a task's completion status for a given date. Server rejects updates to any date other than today |
+| `DELETE` | `/api/v1/checklist/:id` | Soft-delete a routine task |
 
 #### POST body
 
@@ -81,13 +81,23 @@ curl http://localhost:3000/api/v1/checklist
 }
 ```
 
-#### PATCH body (all fields optional, at least one required)
+#### PATCH body
 
 ```json
 {
-  "completed": true
+  "completed": true,
+  "date": "2026-05-31"
 }
 ```
+
+---
+
+## Docs
+
+The `docs/` folder contains machine-readable API documentation:
+
+- [`docs/openapi.yaml`](./docs/openapi.yaml) — OpenAPI 3.1 contract for all endpoints
+- [`docs/insomnia-collection.json`](./docs/insomnia-collection.json) — Insomnia v4 collection (File → Import to load)
 
 ---
 
