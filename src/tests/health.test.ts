@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'bun:test'
-import { createApp } from '../app'
+import { describe, expect, it, mock } from 'bun:test'
+
+mock.module('../middleware/auth.js', () => ({
+  authMiddleware: async (c: { set: (k: string, v: string) => void }, next: () => Promise<void>) => {
+    c.set('userId', 'test-user-id')
+    await next()
+  },
+}))
+
+const { createApp } = await import('../app.js')
 
 describe('GET /health', () => {
   const app = createApp()
@@ -19,7 +27,6 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  // Checklist is implemented in Phase 2 — excluded from stub checks
   const domains = ['lists', 'workout', 'nutrition', 'bootcamp']
 
   for (const domain of domains) {

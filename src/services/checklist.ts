@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase.js'
+import { getSupabase } from '../lib/supabase.js'
 import type { Task, CreateTaskInput } from '../schemas/checklist.js'
 
 function todayUTC(): string {
@@ -7,7 +7,7 @@ function todayUTC(): string {
 
 export const checklistService = {
   async getTasks(date: string, userId: string): Promise<{ morning: Task[]; evening: Task[] }> {
-    const { data: taskRows, error: taskError } = await supabase
+    const { data: taskRows, error: taskError } = await getSupabase()
       .from('tasks')
       .select('*')
       .eq('user_id', userId)
@@ -21,7 +21,7 @@ export const checklistService = {
     let completedIds = new Set<string>()
 
     if (taskIds.length > 0) {
-      const { data: completions, error: compError } = await supabase
+      const { data: completions, error: compError } = await getSupabase()
         .from('task_completions')
         .select('task_id')
         .eq('date', date)
@@ -42,7 +42,7 @@ export const checklistService = {
   },
 
   async createTask(data: CreateTaskInput, userId: string): Promise<Task> {
-    const { data: created, error } = await supabase
+    const { data: created, error } = await getSupabase()
       .from('tasks')
       .insert({ ...data, user_id: userId })
       .select()
@@ -54,7 +54,7 @@ export const checklistService = {
   },
 
   async toggleTask(id: string, completed: boolean, date: string, userId: string): Promise<Task | null> {
-    const { data: task, error: fetchError } = await supabase
+    const { data: task, error: fetchError } = await getSupabase()
       .from('tasks')
       .select('*')
       .eq('id', id)
@@ -69,12 +69,12 @@ export const checklistService = {
     }
 
     if (completed) {
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('task_completions')
         .upsert({ task_id: id, date }, { onConflict: 'task_id,date' })
       if (error) throw new Error(error.message)
     } else {
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('task_completions')
         .delete()
         .eq('task_id', id)
@@ -86,7 +86,7 @@ export const checklistService = {
   },
 
   async deleteTask(id: string, userId: string): Promise<boolean> {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('tasks')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
