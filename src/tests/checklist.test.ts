@@ -27,7 +27,7 @@ const pmTask: Task = {
   deleted_at: null,
 }
 
-// Mock must be called before importing the app
+// Mocks must be called before importing the app
 const mockGetTasks = mock(() =>
   Promise.resolve({ morning: [] as Task[], evening: [] as Task[] }),
 )
@@ -37,6 +37,13 @@ const mockCreateTask = mock(() => Promise.resolve(null as Task | null))
 const mockToggleTask = mock(() => Promise.resolve(null as Task | null))
 
 const mockDeleteTask = mock(() => Promise.resolve(false))
+
+mock.module('../middleware/auth.js', () => ({
+  authMiddleware: async (c: { set: (k: string, v: string) => void }, next: () => Promise<void>) => {
+    c.set('userId', 'test-user-id')
+    await next()
+  },
+}))
 
 mock.module('../services/checklist.js', () => ({
   checklistService: {
