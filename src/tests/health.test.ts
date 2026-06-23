@@ -7,6 +7,19 @@ mock.module('../middleware/auth.js', () => ({
   },
 }))
 
+mock.module('../services/bootcamp.js', () => ({
+  bootcampService: {
+    listWeeks: async () => [],
+    getWeek: async () => null,
+    upsertWeek: async () => ({}),
+    getCompletions: async () => [],
+    toggleCompletion: async () => {},
+    getContent: async () => [],
+    saveContent: async () => {},
+    generateReport: async () => null,
+  },
+}))
+
 const { createApp } = await import('../app.js')
 
 describe('GET /health', () => {
@@ -27,7 +40,7 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  const domains = ['lists', 'workout', 'nutrition', 'bootcamp']
+  const domains = ['lists', 'workout', 'nutrition']
 
   for (const domain of domains) {
     it(`GET /api/v1/${domain} returns 200`, async () => {
@@ -40,6 +53,20 @@ describe('Domain stub routes', () => {
       expect(body.message).toContain('coming soon')
     })
   }
+})
+
+describe('Bootcamp curriculum routes', () => {
+  const app = createApp()
+
+  it('GET /api/v1/bootcamp/curriculum returns 200 with data array', async () => {
+    const req = new Request('http://localhost/api/v1/bootcamp/curriculum')
+    const res = await app.fetch(req)
+
+    expect(res.status).toBe(200)
+
+    const body = (await res.json()) as { data: unknown[] }
+    expect(Array.isArray(body.data)).toBe(true)
+  })
 })
 
 describe('GET /api/v1/checklist', () => {
