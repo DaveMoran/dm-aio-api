@@ -44,6 +44,11 @@ export const WorkoutExerciseCompletionSchema = z.object({
   completed_at: z.string().datetime(),
 })
 
+export const ToggleCompletionSchema = z.object({
+  date: z.string().date(),
+  completed: z.boolean(),
+})
+
 export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema>
 export type WorkoutScheduleItem = z.infer<typeof WorkoutScheduleItemSchema>
 export type WorkoutProgramExercise = z.infer<typeof WorkoutProgramExerciseSchema>
