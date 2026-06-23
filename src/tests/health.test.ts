@@ -40,6 +40,15 @@ mock.module('../services/workout.js', () => ({
   },
 }))
 
+mock.module('../services/nutrition.js', () => ({
+  nutritionService: {
+    getAllTargets: async () => [],
+    saveAllTargets: async () => {},
+    getLogForDate: async () => null,
+    saveLog: async () => {},
+  },
+}))
+
 const { createApp } = await import('../app.js')
 
 describe('GET /health', () => {
@@ -60,7 +69,7 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  const domains = ['lists', 'nutrition']
+  const domains = ['lists']
 
   for (const domain of domains) {
     it(`GET /api/v1/${domain} returns 200`, async () => {
