@@ -20,6 +20,26 @@ mock.module('../services/bootcamp.js', () => ({
   },
 }))
 
+mock.module('../services/workout.js', () => ({
+  workoutService: {
+    getActivePlan: async () => ({
+      id: 'test-plan-id',
+      name: 'Test Plan',
+      start_date: '2026-06-01',
+      total_weeks: 27,
+      active: true,
+      created_at: '2026-06-01T00:00:00Z',
+    }),
+    getWeekSummaries: async () => [],
+    getWeekSchedule: async () => [],
+    getCompletionsForWeek: async () => [],
+    getExercisesForItem: async () => [],
+    getExerciseCompletionsForWeek: async () => [],
+    toggleItemCompletion: async () => null,
+    toggleExerciseCompletion: async () => null,
+  },
+}))
+
 const { createApp } = await import('../app.js')
 
 describe('GET /health', () => {
@@ -40,7 +60,7 @@ describe('GET /health', () => {
 describe('Domain stub routes', () => {
   const app = createApp()
 
-  const domains = ['lists', 'workout', 'nutrition']
+  const domains = ['lists', 'nutrition']
 
   for (const domain of domains) {
     it(`GET /api/v1/${domain} returns 200`, async () => {
@@ -53,6 +73,33 @@ describe('Domain stub routes', () => {
       expect(body.message).toContain('coming soon')
     })
   }
+})
+
+describe('Workout routes', () => {
+  const app = createApp()
+
+  it('GET /api/v1/workout/weeks returns 200 with plan and weeks', async () => {
+    const req = new Request('http://localhost/api/v1/workout/weeks')
+    const res = await app.fetch(req)
+
+    expect(res.status).toBe(200)
+
+    const body = (await res.json()) as { data: { plan: unknown; weeks: unknown[] } }
+    expect(body.data).toHaveProperty('plan')
+    expect(body.data).toHaveProperty('weeks')
+    expect(Array.isArray(body.data.weeks)).toBe(true)
+  })
+
+  it('GET /api/v1/workout/weeks/1 returns 200 with week detail', async () => {
+    const req = new Request('http://localhost/api/v1/workout/weeks/1')
+    const res = await app.fetch(req)
+
+    expect(res.status).toBe(200)
+
+    const body = (await res.json()) as { data: { week_number: number; days: unknown[] } }
+    expect(body.data.week_number).toBe(1)
+    expect(Array.isArray(body.data.days)).toBe(true)
+  })
 })
 
 describe('Bootcamp curriculum routes', () => {
