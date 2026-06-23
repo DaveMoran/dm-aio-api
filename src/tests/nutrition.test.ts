@@ -1,8 +1,8 @@
 import { describe, expect, it, mock, beforeEach } from 'bun:test'
 
-const mockGetAllTargets = mock(() => Promise.resolve([]))
+const mockGetAllTargets = mock(() => Promise.resolve([] as Record<string, unknown>[]))
 const mockSaveAllTargets = mock(() => Promise.resolve())
-const mockGetLogForDate = mock(() => Promise.resolve(null))
+const mockGetLogForDate = mock(() => Promise.resolve(null as Record<string, unknown> | null))
 const mockSaveLog = mock(() => Promise.resolve())
 
 mock.module('../middleware/auth.js', () => ({
